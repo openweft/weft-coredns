@@ -18,6 +18,13 @@ ENV CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH}
 RUN make coredns BINARY=/out/coredns LDFLAGS="-s -w" SYSTEM="GOOS=${TARGETOS} GOARCH=${TARGETARCH}"
 
 FROM scratch
+ARG COREDNS_VERSION
+LABEL org.opencontainers.image.title="weft-coredns" \
+      org.opencontainers.image.description="openweft 4-arch build of coredns/coredns (adds loong64 vs upstream)" \
+      org.opencontainers.image.version="${COREDNS_VERSION}" \
+      org.opencontainers.image.source="https://github.com/openweft/weft-coredns" \
+      org.opencontainers.image.url="https://github.com/openweft/weft-coredns" \
+      org.opencontainers.image.licenses="Apache-2.0"
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder /out/coredns /usr/local/bin/coredns
