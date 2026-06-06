@@ -17,7 +17,9 @@ ENV CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH}
 # plugin.cfg + `go build`. We pass GOOS/GOARCH through.
 RUN make coredns BINARY=/out/coredns LDFLAGS="-s -w" SYSTEM="GOOS=${TARGETOS} GOARCH=${TARGETARCH}"
 
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM scratch
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder /out/coredns /usr/local/bin/coredns
 EXPOSE 53 53/udp
 ENTRYPOINT ["/usr/local/bin/coredns"]
