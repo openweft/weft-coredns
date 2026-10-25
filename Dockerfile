@@ -4,8 +4,8 @@
 # under ghcr.io/openweft/weft-coredns so the openweft cluster's egress
 # cache treats it the same as the other infra images.
 
-ARG COREDNS_VERSION=v1.11.3
-ARG GO_VERSION=1.23
+ARG COREDNS_VERSION=v1.11.4
+ARG GO_VERSION=1.27.2
 
 FROM --platform=$BUILDPLATFORM golang:${GO_VERSION}-bookworm AS builder
 ARG COREDNS_VERSION TARGETOS TARGETARCH
@@ -15,7 +15,11 @@ RUN git clone --depth=1 --branch=${COREDNS_VERSION} https://github.com/coredns/c
 ENV CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH}
 # `make coredns` is the upstream entrypoint ; it runs `go gen` over
 # plugin.cfg + `go build`. We pass GOOS/GOARCH through.
-RUN make coredns BINARY=/out/coredns LDFLAGS="-s -w" SYSTEM="GOOS=${TARGETOS} GOARCH=${TARGETARCH}"
+# Upstream's Makefile exports GOTOOLCHAIN=go$(cat .go-version) (1.23.2 at
+# v1.11.4), which would silently replace the builder's Go with an old one.
+# GOTOOLCHAIN=local on the make command line overrides it so the image is
+# built with the golang:${GO_VERSION} toolchain.
+RUN make coredns GOTOOLCHAIN=local BINARY=/out/coredns LDFLAGS="-s -w" SYSTEM="GOOS=${TARGETOS} GOARCH=${TARGETARCH}"
 
 FROM scratch
 ARG COREDNS_VERSION

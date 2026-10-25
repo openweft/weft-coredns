@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Image tag (e.g. v1.11.3)"
+        description: "Image tag (e.g. v1.11.4)"
         required: true
 
 permissions:
